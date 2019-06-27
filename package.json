@@ -1,0 +1,25 @@
+{
+  "name": "hasu",
+  "version": "0.0.0",
+  "description": "Hasura serverless utils",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/egislook/hasu.git"
+  },
+  "keywords": [
+    "hasura",
+    "serverless",
+    "utils",
+    "node"
+  ],
+  "author": "team7",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/egislook/hasu/issues"
+  },
+  "homepage": "https://github.com/egislook/hasu#readme"
+}
