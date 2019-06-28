@@ -3,6 +3,16 @@
   "version": "0.0.0",
   "description": "Hasura serverless utils",
   "main": "index.js",
+  "dependencies": {
+    "aws-s3": "^2.0.4",
+    "bcrypt": "^3.0.6",
+    "busboy": "^0.3.0",
+    "fetchier": "0.0.13",
+    "fluent-ffmpeg": "^2.1.2",
+    "form-data": "^2.3.3",
+    "qr-image": "^3.2.0",
+    "uuid": "^3.3.2"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
