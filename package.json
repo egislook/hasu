@@ -1,6 +1,6 @@
 {
   "name": "hasu",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Hasura serverless utils",
   "main": "index.js",
   "dependencies": {
