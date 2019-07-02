@@ -1,135 +1,99 @@
-// const fetch   = require('node-fetch');
-// const uuidv1  = require('uuid/v1');
+const fetch   = require('node-fetch');
+const uuidv1  = require('uuid/v1');
+const bcrypt  = require('bcrypt');
+const { fail, loginResult, config} = require('../../utils/helpers');
 
-// const { HASURA_ENDPOINT, HASURA_ACCESSKEY, CLIK_VERIFY_TOKEN } = require('../config');
+let { HASURA_ENDPOINT, HASURA_ACCESSKEY, CLIK_VERIFY_TOKEN, errMessage, debug } = {}
+let headers   = { 'Content-Type': 'application/json' };
 
-// const authorizedHeader = {
-//   'Content-Type': 'application/json',
-//   'X-Hasura-Access-key': HASURA_ACCESSKEY
-// }
+module.exports = async ({body = {}, configFile = false, configs = {}}) => {
+  getConfig(configFile, configs)
 
-// module.exports.handler = async (event, context) => {
+  if(errMessage)
+    return fail(errMessage)
 
-//   const body = JSON.parse(event.body);
+  headers['X-Hasura-Access-key'] = HASURA_ACCESSKEY
 
-//   const { phone, pin, token, query } = body || {};
+  const { phone, pin } = body
 
-//   let { authorization, Authorization, provider } = (event.httpMethod === 'POST' && body !== null && body.headers !== undefined )
-//     ? body.headers
-//     : event.headers;
+  if (!!phone && !!pin)
+    return login(phone, pin);
 
-//   authorization = authorization || Authorization;
+  return loginResult(422, { 'Message': 'Miss matched parameters' })
+};
 
-//   if ( provider === "clik-mobile" && !!authorization ){
-//     const Token = authorization.replace(/bearer(\s{1,})?/i, '')
-//     const headers = {
-//                       'Content-Type': 'application/json',
-//                       'EkycSyncToken': 'UUhCOXV5RklGbkZxZVFJYmRlWlBXeWdPclU4UkFJaTB4aFJsaU5CYUM0OD0='
-//                     }
 
-//     const verifyResult = await fetch(CLIK_VERIFY_TOKEN, {
-//       method: 'POST',
-//       body: JSON.stringify({ Token }),
-//       headers
-//     }).then(res => res.json());
+const getConfig = (configFile, configs) => {
+  configs = config(["HASURA_ENDPOINT", "HASURA_ACCESSKEY", "CLIK_VERIFY_TOKEN", "debug"], configFile, configs)
 
-//     if (verifyResult.code === 200 && verifyResult.data.isTokenValid)
-//       return result(200, {
-//         'x-hasura-role': "admin",
-//         'x-hasura-user-token': authorization.replace(/bearer(\s{1,})?/i, '')
-//       })
-//   }
+  HASURA_ENDPOINT           = configs.HASURA_ENDPOINT
+  HASURA_ACCESSKEY          = configs.HASURA_ACCESSKEY
+  CLIK_VERIFY_TOKEN          = configs.CLIK_VERIFY_TOKEN
+  errMessage                = configs.errMessage
+  debug                     = configs.debug
+}
 
-//   const notify  = event.headers.notify === undefined
-//     ? 'true'
-//     : event.headers.notify;
+async function login(phone, loginPin) {
+  const query = `
+    query{
+      Users(where:{ credential:{ phoneNumber:{ _eq: "${phone}"}}}){
+        name
+        photo
+        email
+        credential{
+          id
+          pin
+        }
+      }
+    }
+  `
 
-//   if (!!authorization || !!token){
-//     const token_key = token || authorization.replace(/bearer(\s{1,})?/i, '');
-//     const tokenData = ~token_key.indexOf('::') && token_key.split('::');
-//     const userRole  = tokenData && tokenData[1];
-//     const realToken = tokenData[0] || token_key;
+  const { data , errors } = await fetch(HASURA_ENDPOINT, {
+    method: 'POST',
+    body: JSON.stringify({ query }),
+    headers
+  }).then(res => res.json())
 
-//     return authorized(realToken, userRole, notify);
-//   }
+  if (data){
+    const { name, photo, email, credential } = data.Users && data.Users[0] || {}
 
-//   if (!!phone && !!pin)
-//     return login(phone, pin);
+    if (credential && credential.length > 0){
+      const { pin, id } = credential[0]
 
-//   return result(422, { 'Message': 'Miss matched parameters' })
-// };
+      const check       = bcrypt.compareSync(loginPin, pin);
 
-// function result(code, body){
-//   return {
-//     statusCode: code,
-//     headers: {
-//       'Content-Type': 'application/json',
-//       'Access-Control-Allow-Credentials' : 'true',
-//       'Access-Control-Allow-Origin': '*'
-//     },
-//     body: JSON.stringify(body)
-//   }
-// }
+      if (check){
+        token = await getToken(id)
+        if(typeof token === 'string')
+          return loginResult(200, {name, photo, email, token})
+      }
+    }
+    return loginResult(401, "Unauthorized!!! Please Contact Clik Customer Support Service.")
+  }
+  return loginResult(401, {Message: "Unauthorized", errors})
+}
 
-// async function login(phone, pin){
-//   const variables = { phone, pin };
+async function getToken(id){
+  let token        = uuidv1()
 
-//   const query = `
-//     query($phone: String!, $pin: String!){
-//       Users(where: {phoneNumber: {_eq: $phone}, pin: {_eq: $pin}} ){
-//         name
-//         token
-//       }
-//     }
-//   `;
+  const query = `
+    mutation{
+      insert_Session(objects: {credentialId: "${id}", token: "${token}"}){
+        returning{
+          token
+        }
+      }
+    }
+  `;
 
-//   const queryResult = await fetch(HASURA_ENDPOINT, {
-//     method: 'POST',
-//     body: JSON.stringify({ query, variables }),
-//     headers: authorizedHeader
-//   });
+  const { data, errors} = await fetch(HASURA_ENDPOINT, {
+    method: 'POST',
+    body: JSON.stringify({ query }),
+    headers
+  }).then(res => res.json());
 
-//   const { errors, data } = await queryResult.json();
+  if(data && data.insert_Session.returning.length > 0)
+    return token
 
-//   if(errors)
-//     return result(401, { 'x-hasura-role': 'Unknown', Message: 'Errors Login' });
-
-//   if(!data.Users.length)
-//     return result(401, { Message: 'Unauthorize' })
-
-//   return result(200, data.Users.shift());
-// };
-
-// async function authorized(token, userRole, notify){
-//   const uuid = uuidv1();
-//   const authorizedQuery = `
-//     query{
-//       Users(where: {token: { _eq: "${token}"}}){
-//         id
-//         role
-//       }
-//     }
-//   `;
-
-//   const user = await fetch(HASURA_ENDPOINT, {
-//     method: 'POST',
-//     body: JSON.stringify({ query: authorizedQuery }),
-//     headers: authorizedHeader
-//   });
-
-//   const { errors, data } = await user.json();
-
-//   try {
-//     const {role, id } = data.Users.shift()
-
-//     return result(200, {
-//       'x-hasura-role': userRole === 'user' ? userRole : role,
-//       'x-hasura-credential': uuid,
-//       'X-HASURA-USER-TOKEN': token,
-//       'x-hasura-user-id': id,
-//       'X-HASURA-Notification': notify
-//     })
-//   } catch(errors) {
-//     return result(401, { 'x-hasura-role': 'undefined Token' })
-//   }
-// }
+  return loginResult(500, 'Updated failed')
+}

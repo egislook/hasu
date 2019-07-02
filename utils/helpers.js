@@ -9,6 +9,7 @@ module.exports.config           = config;
 module.exports.success          = success;
 module.exports.fail             = fail;
 module.exports.result           = result;
+module.exports.loginResult      = loginResult;
 module.exports.svg              = svg;
 // module.exports.keysToLowerCase  = keysToLowerCase;
 // module.exports.keysToUpperCase  = keysToUpperCase;
@@ -57,6 +58,18 @@ function result(code, body, error){
       message: typeof error === 'object' ? error.message : error,
       data: body
     })
+  }
+}
+
+function loginResult(code, body){
+  return {
+    statusCode: code,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Credentials' : 'true',
+      'Access-Control-Allow-Origin': '*'
+    },
+    body: JSON.stringify(body)
   }
 }
 
