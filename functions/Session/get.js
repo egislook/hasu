@@ -1,5 +1,5 @@
-const qr      = require('qr-image');
-const { GQL } = require('fetchier');
+const { GQL }           = require('fetchier');
+const GenerateQR        = require('../QR');
 
 const { create, getSessionToken, deleteSession } = require('../../utils/qrQueries');
 const { fail, success , config} = require('../../utils/helpers');
@@ -24,12 +24,7 @@ module.exports = async ({session, configFile = false, configs = {}}) => {
   try{
     const { id } = await setSession();
 
-    const qr = await toQr({
-      url: URL_PROVIDER,
-      session: id,
-      provider: PROVIDER,
-      hook: QR_HOOK_ENDPOINT
-    });
+    const qr = await GenerateQR({ url: URL_PROVIDER, session: id, provider: PROVIDER, hook: QR_HOOK_ENDPOINT }).then( res => res.body)
 
     return success({ qr, session: id });
 
@@ -46,18 +41,6 @@ const getConfigs = (configFile, configs) => {
   URL_PROVIDER              = configs.URL_PROVIDER
   errMessage                = configs.errMessage
   debug                     = configs.debug
-}
-
-
-function toQr(data = 'clik') {
-  data = typeof data === 'object' ? JSON.stringify(data) : data;
-
-  return new Promise((resolve, reject) => {
-    let string = '';
-    const stream = qr.image(data, { type: 'svg' });
-    stream.on('data', (buffer) => { string += buffer.toString() });
-    stream.on('end', () => resolve('data:image/svg+xml;base64,' + Buffer.from(string).toString('base64')));
-  });
 }
 
 function setSession() {

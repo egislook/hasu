@@ -1,9 +1,8 @@
-const { getQR }         = require('../../functions');
+const { getSession }         = require('../../functions');
 
 module.exports.handler = async (event, context) => {
 
   const { session } = event.queryStringParameters || {};
 
-  return getQR({session, configFile: true});
+  return getSession({session, configFile: true});
 };
-

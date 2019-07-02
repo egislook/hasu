@@ -9,6 +9,7 @@ module.exports.config           = config;
 module.exports.success          = success;
 module.exports.fail             = fail;
 module.exports.result           = result;
+module.exports.svg              = svg;
 // module.exports.keysToLowerCase  = keysToLowerCase;
 // module.exports.keysToUpperCase  = keysToUpperCase;
 module.exports.parseBody        = parseBody;
@@ -197,4 +198,15 @@ function parseBody(e){
     bb.end(e.body);
 
   })
+}
+
+function svg(body){
+  return {
+    headers: {
+      'Content-Type': 'image/svg+xml',
+      'Access-Control-Allow-Credentials' : true,
+      'Access-Control-Allow-Origin': '*'
+    },
+    body
+  }
 }
