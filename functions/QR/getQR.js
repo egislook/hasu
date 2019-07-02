@@ -1,15 +1,20 @@
 const qr      = require('qr-image');
 const { GQL } = require('fetchier');
 
-// const { QR_HOOK_ENDPOINT, HASURA_ENDPOINT, HASURA_ACCESSKEY, PROVIDER, URL_PROVIDER, debug } = require(process.cwd() + '/config.js');
-const { create, getSessionToken, deleteSession } = require('../utils/qrQueries');
-const { svg, fail, success, config } = require('../utils/utils');
-const { QR_HOOK_ENDPOINT, HASURA_ENDPOINT, HASURA_ACCESSKEY, PROVIDER, URL_PROVIDER, debug, errMessage  } = config(["QR_HOOK_ENDPOINT", "HASURA_ENDPOINT", "HASURA_ACCESSKEY", "PROVIDER", "URL_PROVIDER", "debug"])
+const { create, getSessionToken, deleteSession } = require('../../utils/qrQueries');
+const { fail, success , config} = require('../../utils/helpers');
 
+let { QR_HOOK_ENDPOINT, HASURA_ENDPOINT, HASURA_ACCESSKEY, PROVIDER, URL_PROVIDER, errMessage, debug } = {}
 
-module.exports = async (session) => {
+let headers   = { 'Content-Type': 'application/json' };
+
+module.exports = async ({session, configFile = false, configs = {}}) => {
+  getConfigs(configFile, configs)
+
   if(errMessage)
     return fail(errMessage)
+
+  headers['x-hasura-admin-secret'] = HASURA_ACCESSKEY
 
   if(session){
     const { token } = await getSession(session);
@@ -31,6 +36,19 @@ module.exports = async (session) => {
   } catch(error){ return fail(error) }
 }
 
+const getConfigs = (configFile, configs) => {
+  configs = config(["QR_HOOK_ENDPOINT", "HASURA_ENDPOINT", "HASURA_ACCESSKEY", "PROVIDER", "URL_PROVIDER", "debug"], configFile, configs)
+
+  QR_HOOK_ENDPOINT          = configs.QR_HOOK_ENDPOINT
+  HASURA_ENDPOINT           = configs.HASURA_ENDPOINT
+  HASURA_ACCESSKEY          = configs.HASURA_ACCESSKEY
+  PROVIDER                  = configs.PROVIDER
+  URL_PROVIDER              = configs.URL_PROVIDER
+  errMessage                = configs.errMessage
+  debug                     = configs.debug
+}
+
+
 function toQr(data = 'clik') {
   data = typeof data === 'object' ? JSON.stringify(data) : data;
 
@@ -44,15 +62,13 @@ function toQr(data = 'clik') {
 
 function setSession() {
   const query = create('Session');
-  const headers = { 'Content-Type': 'application/json', 'x-hasura-admin-secret': HASURA_ACCESSKEY };
 
   return GQL({ url: HASURA_ENDPOINT, query, headers, debug, variables: { values: {} } })
     .then(({ insert_Session: { returning: [ session ]}}) => session);
 }
 
-function getSession(id) {
-  const query = getSessionToken(id);
-  const headers = { 'Content-Type': 'application/json', 'x-hasura-admin-secret': HASURA_ACCESSKEY };
+function getSession(session) {
+  const query = getSessionToken(session);
 
   return GQL({ url: HASURA_ENDPOINT, query, headers, debug })
     .then(({ Session: [ session ]}) => {
