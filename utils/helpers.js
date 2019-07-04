@@ -5,18 +5,20 @@
 // const uuidv4      = require('uuid/v4');
 // const { fetch }   = require('fetchier');
 // const { createWriteStream, createReadStream, existsSync, mkdirSync, unlinkSync, rmdirSync } = require('fs');
-module.exports.config           = config;
-module.exports.success          = success;
-module.exports.fail             = fail;
-module.exports.result           = result;
-module.exports.loginResult      = loginResult;
-module.exports.svg              = svg;
-// module.exports.keysToLowerCase  = keysToLowerCase;
-// module.exports.keysToUpperCase  = keysToUpperCase;
-module.exports.parseBody        = parseBody;
+module.exports.config             = config;
+module.exports.success            = success;
+module.exports.fail               = fail;
+module.exports.result             = result;
+module.exports.loginResult        = loginResult;
+module.exports.svg                = svg;
+module.exports.keysToLowerCase    = keysToLowerCase;
+module.exports.keysToUpperCase    = keysToUpperCase;
+module.exports.destructionResult  = destructionResult;
+module.exports.parseBody          = parseBody;
 // module.exports.download         = download;
 // module.exports.imgsFromVid      = imgsFromVid;
-module.exports.uploadImgToS3    = uploadImgToS3;
+module.exports.uploadImgToS3      = uploadImgToS3;
+
 // module.exports.submit           = submit;
 // module.exports.resultJson       = resultJson;
 
@@ -27,6 +29,19 @@ function checkConfigFile(){
   } catch(err) {
     throw err
   }
+}
+
+function destructionResult(data, keys){
+  let result = {}
+  Object.keys(data).forEach( key => {
+    if( keys.indexOf(key) > -1 && typeof data[key] === 'string' ){
+      result[key] = data[key]
+      keys = keys.filter( k => key !== k)
+    }
+    if(typeof data[key] === 'object')
+      Object.assign(result, destructionResult(data[key].length === undefined ? data[key] : data[key][0], keys))
+  })
+  return result
 }
 
 function config(requiredKeys, configFile, configs){

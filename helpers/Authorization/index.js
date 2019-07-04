@@ -7,5 +7,7 @@ module.exports.handler = async (event, context) => {
     ? body.headers
     : event.headers;
 
-  return auth({body: {authorization, Authorization, provider, token: body.token}, configFile: true});
+  const { authQuery } = require(process.cwd() + '/config.js');
+
+  return auth({body: {authorization, Authorization, provider, token: body.token}, configFile: true, query: authQuery });
 };

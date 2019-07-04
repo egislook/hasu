@@ -3,7 +3,7 @@ const uuidv1  = require('uuid/v1');
 const bcrypt  = require('bcrypt');
 const { fail, loginResult, config} = require('../../utils/helpers');
 
-let { HASURA_ENDPOINT, HASURA_ACCESSKEY, CLIK_VERIFY_TOKEN, errMessage, debug } = {}
+let { HASURA_ENDPOINT, HASURA_ACCESSKEY, errMessage, debug } = {}
 let headers   = { 'Content-Type': 'application/json' };
 
 module.exports = async ({body = {}, configFile = false, configs = {}}) => {
@@ -24,11 +24,10 @@ module.exports = async ({body = {}, configFile = false, configs = {}}) => {
 
 
 const getConfig = (configFile, configs) => {
-  configs = config(["HASURA_ENDPOINT", "HASURA_ACCESSKEY", "CLIK_VERIFY_TOKEN", "debug"], configFile, configs)
+  configs = config(["HASURA_ENDPOINT", "HASURA_ACCESSKEY", "debug"], configFile, configs)
 
   HASURA_ENDPOINT           = configs.HASURA_ENDPOINT
   HASURA_ACCESSKEY          = configs.HASURA_ACCESSKEY
-  CLIK_VERIFY_TOKEN          = configs.CLIK_VERIFY_TOKEN
   errMessage                = configs.errMessage
   debug                     = configs.debug
 }
@@ -36,14 +35,9 @@ const getConfig = (configFile, configs) => {
 async function login(phone, loginPin) {
   const query = `
     query{
-      Users(where:{ credential:{ phoneNumber:{ _eq: "${phone}"}}}){
-        name
-        photo
-        email
-        credential{
-          id
-          pin
-        }
+      Credential(where:{ phoneNumber:{ _eq: "${phone}"}}){
+        id
+        pin
       }
     }
   `
@@ -54,23 +48,18 @@ async function login(phone, loginPin) {
     headers
   }).then(res => res.json())
 
-  if (data){
-    const { name, photo, email, credential } = data.Users && data.Users[0] || {}
+  if (data && data.Credential && data.Credential.length > 0){
+    const { pin, id } = data.Credential[0]
 
-    if (credential && credential.length > 0){
-      const { pin, id } = credential[0]
+    const check       = bcrypt.compareSync(loginPin, pin);
 
-      const check       = bcrypt.compareSync(loginPin, pin);
-
-      if (check){
-        token = await getToken(id)
-        if(typeof token === 'string')
-          return loginResult(200, {name, photo, email, token})
-      }
+    if (check){
+      token = await getToken(id)
+      if(typeof token === 'string')
+        return loginResult(200, {token})
     }
-    return loginResult(401, "Unauthorized!!! Please Contact Clik Customer Support Service.")
   }
-  return loginResult(401, {Message: "Unauthorized", errors})
+  return loginResult(401, "Unauthorized!!! Please Contact Clik Customer Support Service.")
 }
 
 async function getToken(id){

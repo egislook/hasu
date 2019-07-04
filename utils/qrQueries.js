@@ -1,5 +1,19 @@
 module.exports = {
 
+  authQuery: (token) => `
+    query{
+      Session(where: { token: { _eq: "${token}"} }){
+        createdAt
+        credential{
+          user{
+            id
+            role
+          }
+        }
+      }
+    }
+  `,
+
   create: (table) => `
     mutation($values: ${table}_insert_input!) {
       insert_${table}(objects: [$values]){
@@ -64,6 +78,5 @@ module.exports = {
       }
     }
   `
-
 
 }

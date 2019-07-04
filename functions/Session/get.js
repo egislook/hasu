@@ -11,8 +11,10 @@ let headers   = { 'Content-Type': 'application/json' };
 module.exports = async ({session, configFile = false, configs = {}}) => {
   getConfigs(configFile, configs)
 
-  if(errMessage)
+  if(errMessage){
+    console.log("errMessage", errMessage)
     return fail(errMessage)
+  }
 
   headers['x-hasura-admin-secret'] = HASURA_ACCESSKEY
 
