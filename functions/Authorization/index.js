@@ -1,19 +1,19 @@
-const fetch   = require('node-fetch');
+// const fetch   = require('node-fetch');
 const uuidv1  = require('uuid/v1');
 const bcrypt  = require('bcrypt');
 
-const { fail, loginResult, config} = require('../../utils/helpers');
+const { fail, loginResult, getRequestAct} = require('../../utils/helpers');
 
-let { HASURA_ENDPOINT, HASURA_ACCESSKEY, CLIK_VERIFY_TOKEN, errMessage, debug } = {}
-let headers   = { 'Content-Type': 'application/json' };
+// let { HASURA_ENDPOINT, HASURA_ACCESSKEY, CLIK_VERIFY_TOKEN, errMessage, debug } = {}
+// let headers   = { 'Content-Type': 'application/json' };
 
-module.exports = async ({body = {}, configFile = false, configs = {}}) => {
-  getConfig(configFile, configs)
+module.exports = async ({ body = {} }) => {
+  // getConfig(configFile, configs)
 
-  if(errMessage)
-    return fail(errMessage)
+  // if(errMessage)
+  //   return fail(errMessage)
 
-  headers['X-Hasura-Access-key'] = HASURA_ACCESSKEY
+  // headers['X-Hasura-Access-key'] = HASURA_ACCESSKEY
 
   let { token, authorization, Authorization, provider } = body
 
@@ -26,11 +26,13 @@ module.exports = async ({body = {}, configFile = false, configs = {}}) => {
                       'EkycSyncToken': 'UUhCOXV5RklGbkZxZVFJYmRlWlBXeWdPclU4UkFJaTB4aFJsaU5CYUM0OD0='
                     }
 
-    const verifyResult = await fetch(CLIK_VERIFY_TOKEN, {
-      method: 'POST',
-      body: JSON.stringify({ Token }),
-      headers
-    }).then(res => res.json());
+    const verifyResult = await getRequestAct('POST', { url: CLIK_VERIFY_TOKEN, Token, headers })
+      .then(res => res.json());
+    // const verifyResult = await fetch(CLIK_VERIFY_TOKEN, {
+    //   method: 'POST',
+    //   body: JSON.stringify({ Token }),
+    //   headers
+    // }).then(res => res.json());
 
     if (verifyResult.code === 200 && verifyResult.data.isTokenValid)
       return loginResult(200, {
@@ -47,15 +49,15 @@ module.exports = async ({body = {}, configFile = false, configs = {}}) => {
   return loginResult(422, { 'Message': 'Miss matched parameters' })
 };
 
-const getConfig = (configFile, configs) => {
-  configs = config(["HASURA_ENDPOINT", "HASURA_ACCESSKEY", "CLIK_VERIFY_TOKEN", "debug"], configFile, configs)
+// const getConfig = (configFile, configs) => {
+//   configs = config(["HASURA_ENDPOINT", "HASURA_ACCESSKEY", "CLIK_VERIFY_TOKEN", "debug"], configFile, configs)
 
-  HASURA_ENDPOINT           = configs.HASURA_ENDPOINT
-  HASURA_ACCESSKEY          = configs.HASURA_ACCESSKEY
-  CLIK_VERIFY_TOKEN          = configs.CLIK_VERIFY_TOKEN
-  errMessage                = configs.errMessage
-  debug                     = configs.debug
-}
+//   HASURA_ENDPOINT           = configs.HASURA_ENDPOINT
+//   HASURA_ACCESSKEY          = configs.HASURA_ACCESSKEY
+//   CLIK_VERIFY_TOKEN          = configs.CLIK_VERIFY_TOKEN
+//   errMessage                = configs.errMessage
+//   debug                     = configs.debug
+// }
 
 async function authorized(token){
   const uuid = uuidv1();
@@ -74,11 +76,13 @@ async function authorized(token){
     }
   `;
 
-  const { errors, data } = await fetch(HASURA_ENDPOINT, {
-    method: 'POST',
-    body: JSON.stringify({ query: authorizedQuery }),
-    headers: headers
-  }).then(res => res.json());
+  const { errors, data } = await getRequestAct('POST', { query: authorizedQuery })
+    .then(res => res.json());
+  // const { errors, data } = await fetch(HASURA_ENDPOINT, {
+  //   method: 'POST',
+  //   body: JSON.stringify({ query: authorizedQuery }),
+  //   headers: headers
+  // }).then(res => res.json());
 
   try {
     let {createdAt, credential: { user: { role, id }}} = data.Session.shift()
@@ -112,10 +116,10 @@ function deleteExpiredToken(token){
       }
     }
   `
-
-  fetch(HASURA_ENDPOINT, {
-    method: 'POST',
-    body: JSON.stringify({ query }),
-    headers: headers
-  });
+  getRequestAct('POST', { query })
+  // fetch(HASURA_ENDPOINT, {
+  //   method: 'POST',
+  //   body: JSON.stringify({ query }),
+  //   headers: headers
+  // });
 }

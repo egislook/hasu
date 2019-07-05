@@ -1,4 +1,4 @@
-module.exports.generateQR       = require('./QR');
+module.exports.GenerateQR       = require('./QR');
 
 module.exports.getSession       = require('./Session/get');
 module.exports.postSession      = require('./Session/post');

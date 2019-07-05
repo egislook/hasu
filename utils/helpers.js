@@ -1,16 +1,51 @@
-// const AWS         = require('aws-sdk');
-// const busboy      = require('busboy');
-// const FormData    = require('form-data');
+const AWS         = require('aws-sdk');
+const busboy      = require('busboy');
+const FormData    = require('form-data');
 // const ffmpeg      = require('fluent-ffmpeg')
-// const uuidv4      = require('uuid/v4');
-// const { fetch }   = require('fetchier');
+const uuidv4      = require('uuid/v4');
+const { fetch, GQL }   = require('fetchier');
 // const { createWriteStream, createReadStream, existsSync, mkdirSync, unlinkSync, rmdirSync } = require('fs');
-module.exports.config           = config;
+const functions      = require('../functions');
+const {
+  debug,
+  BUCKET,
+  REGION,
+  ACCESSKEYID,
+  SECRETACCESSKEY,
+  HASURA_ENDPOINT,
+  HASURA_ACCESSKEY,
+  CLIK_VERIFY_TOKEN,
+  CLIK_UPDATE_ENDPOINT_EKYC,
+  CLIK_UPDATE_ENDPOINT_EKYM,
+  SLASH_DOCUMENT_ENDPOINT,
+  EVERAI_LIVENESS_ENDPOINT,
+  EVERAI_MATCH_ENDPOINT,
+  QR_HOOK_ENDPOINT,
+  MAP_KEY,
+  PROVIDER,
+  URL_PROVIDER,
+} = require(process.cwd() + '/config.js')
+
+const headers = {
+  'Content-Type': 'application/json',
+  'x-hasura-admin-secret': HASURA_ACCESSKEY
+}
+
+const S3config = {
+  Bucket: BUCKET,
+  region: REGION,
+  accessKeyId: ACCESSKEYID,
+  secretAccessKey: SECRETACCESSKEY,
+  signatureVersion: 'v4',
+}
+// module.exports.config           = config;
 module.exports.success          = success;
 module.exports.fail             = fail;
 module.exports.result           = result;
 module.exports.loginResult      = loginResult;
 module.exports.svg              = svg;
+module.exports.generateQR       = generateQR;
+module.exports.S3config         = S3config;
 // module.exports.keysToLowerCase  = keysToLowerCase;
 // module.exports.keysToUpperCase  = keysToUpperCase;
 module.exports.parseBody        = parseBody;
@@ -21,27 +56,74 @@ module.exports.uploadImgToS3    = uploadImgToS3;
 // module.exports.resultJson       = resultJson;
 
 // const dir = process.cwd() + '/temp/';
-function checkConfigFile(){
-  try{
-    return require(process.cwd() + '/config.js');
-  } catch(err) {
-    throw err
+
+// const config = (conf) => conf || require(process.cwd() + '/config.js');
+module.exports.getRequestAct   = getRequestAct;
+
+
+function getRequestAct(actionName, request) {
+  let { headers, url, query, debug } = request || {};
+
+  const defHeaders = {
+    'Content-Type': 'application/json',
+    'x-hasura-admin-secret': HASURA_ACCESSKEY
   }
+
+  let req = {
+    url: url || HASURA_ENDPOINT,
+    headers: headers && headers || defHeaders,
+    debug,
+    ...(request)
+  }
+
+  switch(actionName){
+    case 'GQL':
+      return GQL(req);
+    case 'POST':
+      url =  req.url || HASURA_ENDPOINT
+      req = { ...(req), method: 'POST', body: JSON.stringify({ query }) }
+      return fetch(url, req)
+    case 'GET':
+      return
+    // case 'OPEN':
+    //   return WS.OPEN({ url: WSS_URL, token, ...req });
+    // case 'CLOSE':
+    //   return WS.CLOSE({ url: WSS_URL, ...req });
+    // case 'PUT':
+    //   return PUT({ ...req });
+    // case 'SUB':
+    //   return WS.SUB({ url: req.url || WSS_URL, subscription: req });
+    // case 'UNSUB':
+    //   return WS.UNSUB({ url: WSS_URL, ...req });
+  }
+
+  return Promise.reject('Incorrect action ' + actionName);
 }
 
-function config(requiredKeys, configFile, configs){
-  try {
-    configs             = configFile ? checkConfigFile() : configs
-    let missingKeys     = requiredKeys.filter( key => configs[key] === undefined)
-    const errMessage    = missingKeys.join(' ,') + ' are missing.'
-
-    if (missingKeys.length === 0)
-      return configs
-    return { errMessage }
-  } catch(err){
-    return { errMessage: "Config file is missing in root path."}
-  }
+function generateQR({ url, session, provider, hook}) {
+  return functions.GenerateQR({ url: url || URL_PROVIDER, session: session || id, provider: provider || PROVIDER, hook: hook || QR_HOOK_ENDPOINT });
 }
+// function checkConfigFile(){
+//   try{
+//     return require(process.cwd() + '/config.js');
+//   } catch(err) {
+//     throw err
+//   }
+// }
+
+// function config(requiredKeys, configFile, configs){
+//   try {
+//     configs             = configFile ? checkConfigFile() : configs
+//     let missingKeys     = requiredKeys.filter( key => configs[key] === undefined)
+//     const errMessage    = missingKeys.join(' ,') + ' are missing.'
+
+//     if (missingKeys.length === 0)
+//       return configs
+//     return { errMessage }
+//   } catch(err){
+//     return { errMessage: "Config file is missing in root path."}
+//   }
+// }
 
 function result(code, body, error){
 

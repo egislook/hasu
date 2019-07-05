@@ -4,9 +4,9 @@ const { postUpload } = require('../../functions');
 // const { BUCKET, REGION, ACCESSKEYID, SECRETACCESSKEY } = require('../config')
 
 module.exports.handler = async (event, context) => {
-  const { bucket, configs }  = event.body && JSON.stringify(event.body) || {}
+  const { bucket, configs } = event.body && JSON.stringify(event.body) || {}
 
-  return postUpload({bucket, configs, configFile: true, event})
+  return postUpload({bucket, configs, event})
 
   // try{
   //   const { bucket }  = event.body && JSON.stringify(event.body) || {}
