@@ -1,9 +1,8 @@
 const qr      = require('qr-image');
 
-const { fail, config, svg} = require('../../utils/helpers');
+const { fail, svg} = require('../../utils/helpers');
 
 module.exports = async (configs = {}) => {
-
   if(!configs)
     return fail("There is no configs to generatte QR.")
 

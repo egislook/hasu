@@ -1,35 +1,14 @@
-const fetch   = require('node-fetch');
 const uuidv1  = require('uuid/v1');
 const bcrypt  = require('bcrypt');
-const { fail, loginResult, config} = require('../../utils/helpers');
+const { loginResult, getRequestAct} = require('../../utils/helpers')
 
-let { HASURA_ENDPOINT, HASURA_ACCESSKEY, errMessage, debug } = {}
-let headers   = { 'Content-Type': 'application/json' };
-
-module.exports = async ({body = {}, configFile = false, configs = {}}) => {
-  getConfig(configFile, configs)
-
-  if(errMessage)
-    return fail(errMessage)
-
-  headers['X-Hasura-Access-key'] = HASURA_ACCESSKEY
-
+module.exports = async ({ body = {} }) => {
   const { phone, pin } = body
 
   if (!!phone && !!pin)
     return login(phone, pin);
 
   return loginResult(422, { 'Message': 'Miss matched parameters' })
-};
-
-
-const getConfig = (configFile, configs) => {
-  configs = config(["HASURA_ENDPOINT", "HASURA_ACCESSKEY", "debug"], configFile, configs)
-
-  HASURA_ENDPOINT           = configs.HASURA_ENDPOINT
-  HASURA_ACCESSKEY          = configs.HASURA_ACCESSKEY
-  errMessage                = configs.errMessage
-  debug                     = configs.debug
 }
 
 async function login(phone, loginPin) {
@@ -42,14 +21,10 @@ async function login(phone, loginPin) {
     }
   `
 
-  const { data , errors } = await fetch(HASURA_ENDPOINT, {
-    method: 'POST',
-    body: JSON.stringify({ query }),
-    headers
-  }).then(res => res.json())
+  const { Credential } = await getRequestAct('GQL', { query })
 
-  if (data && data.Credential && data.Credential.length > 0){
-    const { pin, id } = data.Credential[0]
+  if (Credential && Credential.length > 0){
+    const { pin, id } = Credential[0]
 
     const check       = bcrypt.compareSync(loginPin, pin);
 
@@ -59,7 +34,7 @@ async function login(phone, loginPin) {
         return loginResult(200, {token})
     }
   }
-  return loginResult(401, "Unauthorized!!! Please Contact Clik Customer Support Service.")
+  return loginResult(401, {Message: "Unauthorized", Users})
 }
 
 async function getToken(id){
@@ -75,13 +50,9 @@ async function getToken(id){
     }
   `;
 
-  const { data, errors} = await fetch(HASURA_ENDPOINT, {
-    method: 'POST',
-    body: JSON.stringify({ query }),
-    headers
-  }).then(res => res.json());
+  const { insert_Session } = await getRequestAct('GQL', { query })
 
-  if(data && data.insert_Session.returning.length > 0)
+  if(insert_Session && insert_Session.returning.length > 0)
     return token
 
   return loginResult(500, 'Updated failed')

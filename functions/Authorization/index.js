@@ -1,23 +1,10 @@
-const fetch   = require('node-fetch');
 const uuidv1  = require('uuid/v1');
 const bcrypt  = require('bcrypt');
-
-const { fail, loginResult, config, destructionResult } = require('../../utils/helpers');
+const { fail, loginResult, config, destructionResult, getRequestAct } = require('../../utils/helpers');
 const { authQuery } = require('../../utils/qrQueries');
 
-let { HASURA_ENDPOINT, HASURA_ACCESSKEY, CLIK_VERIFY_TOKEN, errMessage, debug } = {}
-let headers   = { 'Content-Type': 'application/json' };
+module.exports = async ({body = {}, configs = {}, query = ''}) => {
 
-module.exports = async ({body = {}, configFile = false, configs = {}, query = ''}) => {
-  getConfig(configFile, configs)
-
-  if(errMessage){
-    console.log("errMessage", errMessage);
-
-    return fail(errMessage)
-  }
-
-  headers['X-Hasura-Access-key'] = HASURA_ACCESSKEY
 
   let { token, authorization, Authorization, provider } = body
 
@@ -32,11 +19,7 @@ module.exports = async ({body = {}, configFile = false, configs = {}, query = ''
                       'EkycSyncToken': 'UUhCOXV5RklGbkZxZVFJYmRlWlBXeWdPclU4UkFJaTB4aFJsaU5CYUM0OD0='
                     }
 
-    const verifyResult = await fetch(CLIK_VERIFY_TOKEN, {
-      method: 'POST',
-      body: JSON.stringify({ token }),
-      headers
-    }).then(res => res.json());
+    const verifyResult = await getRequestAct('POST', { url: CLIK_VERIFY_TOKEN, Token, headers })
 
     if (verifyResult.code === 200 && verifyResult.data.isTokenValid)
       return loginResult(200, {
@@ -55,24 +38,12 @@ module.exports = async ({body = {}, configFile = false, configs = {}, query = ''
   return loginResult(422, { 'Message': 'Miss matched parameters' })
 };
 
-const getConfig = (configFile, configs) => {
-  configs = config(["HASURA_ENDPOINT", "HASURA_ACCESSKEY", "debug"], configFile, configs)
-
-  HASURA_ENDPOINT           = configs.HASURA_ENDPOINT
-  HASURA_ACCESSKEY          = configs.HASURA_ACCESSKEY
-  CLIK_VERIFY_TOKEN         = configs.CLIK_VERIFY_TOKEN
-  errMessage                = configs.errMessage
-  debug                     = configs.debug
-}
-
 async function authorized(token, query){
   const uuid = uuidv1();
 
   try {
-
-    var result = await checkToken(token, query)
-
-    let  {createdAt, role, id } = result
+    const { Session } = await getRequestAct('GQL', { query: query || authQuery(token) })
+    let {createdAt, credential: { user: { role, id }}} = Session.shift()
 
     const expireDate = 30
     createdAt   = new Date(createdAt).getTime()
@@ -95,20 +66,20 @@ async function authorized(token, query){
   }
 }
 
-async function checkToken(token, query){
-  query = query || authQuery(token)
+// async function checkToken(token, query){
+//   query = query || authQuery(token)
 
-  const { errors, data } = await fetch(HASURA_ENDPOINT, {
-    method: 'POST',
-    body: JSON.stringify({ query }),
-    headers: headers
-  }).then(res => res.json());
+//   const { errors, data } = await fetch(HASURA_ENDPOINT, {
+//     method: 'POST',
+//     body: JSON.stringify({ query }),
+//     headers: headers
+//   }).then(res => res.json());
 
-  if(!data)
-    throw 'The Token provided is invalided.'
+//   if(!data)
+//     throw 'The Token provided is invalided.'
 
-  return destructionResult(data, ['createdAt', 'role', 'id'])
-}
+//   return destructionResult(data, ['createdAt', 'role', 'id'])
+// }
 
 function deleteExpiredToken(token){
   const query = `
@@ -118,10 +89,10 @@ function deleteExpiredToken(token){
       }
     }
   `
-
-  fetch(HASURA_ENDPOINT, {
-    method: 'POST',
-    body: JSON.stringify({ query }),
-    headers: headers
-  });
+  getRequestAct('GQL', { query })
+  // fetch(HASURA_ENDPOINT, {
+  //   method: 'POST',
+  //   body: JSON.stringify({ query }),
+  //   headers: headers
+  // });
 }

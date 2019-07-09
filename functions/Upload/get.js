@@ -1,21 +1,10 @@
 var AWS                               = require('aws-sdk')
 const uuidv4                          = require('uuid/v4')
-const { svg, fail, success, config }  = require('../../utils/helpers');
-let { BUCKET, REGION, ACCESSKEYID, SECRETACCESSKEY, errMessage } = {}
+let { fail, success, S3config }       = require('../../utils/helpers');
 
-module.exports = async ({configs = {}, bucket, configFile = false}) => {
-  getConfigs(configFile, configs)
-
-  if(errMessage)
-    return fail(errMessage)
-
-  const S3config = {
-    Bucket: bucket || BUCKET,
-    region: REGION,
-    accessKeyId: ACCESSKEYID,
-    secretAccessKey: SECRETACCESSKEY,
-    signatureVersion: 'v4',
-  }
+module.exports = async ({bucket, config }) => {
+  S3config            = config && config || S3config;
+  S3config['Bucket']  = bucket && bucket || S3config.Bucket;
 
   AWS.config.update(S3config);
   const s3         = new AWS.S3();
@@ -26,15 +15,6 @@ module.exports = async ({configs = {}, bucket, configFile = false}) => {
   } catch(error){
     return fail(error)
   }
-}
-
-const getConfigs = (configFile, configs) => {
-  configs = config(["BUCKET", "REGION", "ACCESSKEYID", "SECRETACCESSKEY"], configFile, configs)
-  BUCKET          = configs.BUCKET
-  REGION          = configs.REGION
-  ACCESSKEYID     = configs.ACCESSKEYID
-  SECRETACCESSKEY = configs.SECRETACCESSKEY
-  errMessage      = configs.errMessage
 }
 
 const getUploadURL = (s3, Bucket) => new Promise((resolve, reject) => {
