@@ -1,9 +1,9 @@
 const AWS         = require('aws-sdk');
 const busboy      = require('busboy');
 const FormData    = require('form-data');
-// const ffmpeg      = require('fluent-ffmpeg')
+const ffmpeg      = require('fluent-ffmpeg')
 const uuidv4      = require('uuid/v4');
-const { fetch, GQL }   = require('fetchier');
+const { fetch, GQL, GET, POST }   = require('fetchier');
 // const { createWriteStream, createReadStream, existsSync, mkdirSync, unlinkSync, rmdirSync } = require('fs');
 const functions      = require('../functions');
 const {
@@ -26,11 +26,6 @@ const {
   URL_PROVIDER,
 } = require(process.cwd() + '/config.js')
 
-const headers = {
-  'Content-Type': 'application/json',
-  'x-hasura-admin-secret': HASURA_ACCESSKEY
-}
-
 const S3config = {
   Bucket: BUCKET,
   region: REGION,
@@ -46,13 +41,13 @@ module.exports.loginResult      = loginResult;
 module.exports.svg              = svg;
 module.exports.generateQR       = generateQR;
 module.exports.S3config         = S3config;
-// module.exports.keysToLowerCase  = keysToLowerCase;
-// module.exports.keysToUpperCase  = keysToUpperCase;
+module.exports.keysToLowerCase  = keysToLowerCase;
+module.exports.keysToUpperCase  = keysToUpperCase;
 module.exports.parseBody        = parseBody;
-// module.exports.download         = download;
-// module.exports.imgsFromVid      = imgsFromVid;
+module.exports.download         = download;
+module.exports.imgsFromVid      = imgsFromVid;
 module.exports.uploadImgToS3    = uploadImgToS3;
-// module.exports.submit           = submit;
+module.exports.submit           = submit;
 // module.exports.resultJson       = resultJson;
 
 // const dir = process.cwd() + '/temp/';
@@ -62,39 +57,27 @@ module.exports.getRequestAct   = getRequestAct;
 
 
 function getRequestAct(actionName, request) {
-  let { headers, url, query, debug } = request || {};
+  let { headers, url } = request || {};
 
   const defHeaders = {
-    'Content-Type': 'application/json',
+    'content-type': 'application/json',
     'x-hasura-admin-secret': HASURA_ACCESSKEY
   }
 
   let req = {
-    url: url || HASURA_ENDPOINT,
-    headers: headers && headers || defHeaders,
-    debug,
+    url:      url || HASURA_ENDPOINT,
+    headers:  headers && headers || defHeaders,
+    debug:    request.debug && request.debug || debug,
     ...(request)
   }
 
   switch(actionName){
     case 'GQL':
-      return GQL(req);
+      return GQL(req)
     case 'POST':
-      url =  req.url || HASURA_ENDPOINT
-      req = { ...(req), method: 'POST', body: JSON.stringify({ query }) }
-      return fetch(url, req)
+      return POST(req)
     case 'GET':
-      return
-    // case 'OPEN':
-    //   return WS.OPEN({ url: WSS_URL, token, ...req });
-    // case 'CLOSE':
-    //   return WS.CLOSE({ url: WSS_URL, ...req });
-    // case 'PUT':
-    //   return PUT({ ...req });
-    // case 'SUB':
-    //   return WS.SUB({ url: req.url || WSS_URL, subscription: req });
-    // case 'UNSUB':
-    //   return WS.UNSUB({ url: WSS_URL, ...req });
+      return GET(request)
   }
 
   return Promise.reject('Incorrect action ' + actionName);

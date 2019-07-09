@@ -1,13 +1,8 @@
 var AWS                               = require('aws-sdk')
 const uuidv4                          = require('uuid/v4')
-let { svg, fail, success, S3config }  = require('../../utils/helpers');
-// let { BUCKET, REGION, ACCESSKEYID, SECRETACCESSKEY, errMessage } = {}
+let { fail, success, S3config }       = require('../../utils/helpers');
 
 module.exports = async ({bucket, config }) => {
-  // getConfigs(configFile, configs)
-
-  // if(errMessage)
-  //   return fail(errMessage)
   S3config            = config && config || S3config;
   S3config['Bucket']  = bucket && bucket || S3config.Bucket;
 
@@ -22,17 +17,7 @@ module.exports = async ({bucket, config }) => {
   }
 }
 
-// const getConfigs = (configFile, configs) => {
-//   configs = config(["BUCKET", "REGION", "ACCESSKEYID", "SECRETACCESSKEY"], configFile, configs)
-//   BUCKET          = configs.BUCKET
-//   REGION          = configs.REGION
-//   ACCESSKEYID     = configs.ACCESSKEYID
-//   SECRETACCESSKEY = configs.SECRETACCESSKEY
-//   errMessage      = configs.errMessage
-// }
-
 const getUploadURL = (s3, Bucket) => new Promise((resolve, reject) => {
-  console.log("but", Bucket)
   const config      = { Bucket, Key: uuidv4(), ACL: 'public-read' };
   const uploadURL   = s3.getSignedUrl('putObject', config);
   resolve(uploadURL.split('?').shift());

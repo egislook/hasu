@@ -1,19 +1,9 @@
-// const fetch   = require('node-fetch');
 const uuidv1  = require('uuid/v1');
 const bcrypt  = require('bcrypt');
 
 const { fail, loginResult, getRequestAct} = require('../../utils/helpers');
 
-// let { HASURA_ENDPOINT, HASURA_ACCESSKEY, CLIK_VERIFY_TOKEN, errMessage, debug } = {}
-// let headers   = { 'Content-Type': 'application/json' };
-
 module.exports = async ({ body = {} }) => {
-  // getConfig(configFile, configs)
-
-  // if(errMessage)
-  //   return fail(errMessage)
-
-  // headers['X-Hasura-Access-key'] = HASURA_ACCESSKEY
 
   let { token, authorization, Authorization, provider } = body
 
@@ -27,7 +17,6 @@ module.exports = async ({ body = {} }) => {
                     }
 
     const verifyResult = await getRequestAct('POST', { url: CLIK_VERIFY_TOKEN, Token, headers })
-      .then(res => res.json());
     // const verifyResult = await fetch(CLIK_VERIFY_TOKEN, {
     //   method: 'POST',
     //   body: JSON.stringify({ Token }),
@@ -76,8 +65,7 @@ async function authorized(token){
     }
   `;
 
-  const { errors, data } = await getRequestAct('POST', { query: authorizedQuery })
-    .then(res => res.json());
+  const { Session } = await getRequestAct('GQL', { query: authorizedQuery })
   // const { errors, data } = await fetch(HASURA_ENDPOINT, {
   //   method: 'POST',
   //   body: JSON.stringify({ query: authorizedQuery }),
@@ -85,7 +73,7 @@ async function authorized(token){
   // }).then(res => res.json());
 
   try {
-    let {createdAt, credential: { user: { role, id }}} = data.Session.shift()
+    let {createdAt, credential: { user: { role, id }}} = Session.shift()
 
     const expireDate = 30
     createdAt   = new Date(createdAt).getTime()
@@ -116,7 +104,7 @@ function deleteExpiredToken(token){
       }
     }
   `
-  getRequestAct('POST', { query })
+  getRequestAct('GQL', { query })
   // fetch(HASURA_ENDPOINT, {
   //   method: 'POST',
   //   body: JSON.stringify({ query }),

@@ -1,12 +1,11 @@
-// const { GQL }           = require('fetchier');
-
-const { create, getSessionToken, deleteSession } = require('../../utils/qrQueries');
+const { create, getSessionToken } = require('../../utils/qrQueries');
 const { fail, success, generateQR, getRequestAct } = require('../../utils/helpers');
 
 module.exports = async ({ session }) => {
 
   if(session){
     const { token } = await getSession(session);
+
     return success({ token });
   }
 
@@ -22,21 +21,16 @@ module.exports = async ({ session }) => {
 
 function setSession() {
   const query = create('Session');
+
   return getRequestAct('GQL', { query, variables: { values: {} } })
     .then(({ insert_Session: { returning: [ session ]}}) => session);
-  // return GQL({ url: HASURA_ENDPOINT, query, headers, debug, variables: { values: {} } })
-  //   .then(({ insert_Session: { returning: [ session ]}}) => session);
 }
 
 function getSession(session) {
   const query = getSessionToken(session);
 
-  return getRequestAct('GQL', { query, debug })
+  return getRequestAct('GQL', { query })
     .then(({ Session: [ session ]}) => {
       return session;
     });
-  // return GQL({ url: HASURA_ENDPOINT, query, headers, debug })
-  //   .then(({ Session: [ session ]}) => {
-  //     return session;
-  //   });
 }
