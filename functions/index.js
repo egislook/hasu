@@ -8,7 +8,8 @@ const {
   uploadImgToS3,
   download,
   imgsFromVid,
-  submit
+  submit,
+  getRequestAct
 }                                 = require('../utils/helpers');
 
 
@@ -34,4 +35,5 @@ module.exports.uploadImgToS3      = uploadImgToS3
 module.exports.download           = download
 module.exports.imgsFromVid        = imgsFromVid
 module.exports.submit             = submit
+module.exports.getRequestAct      = getRequestAct
 
