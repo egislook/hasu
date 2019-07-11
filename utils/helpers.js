@@ -25,7 +25,9 @@ const {
   MAP_KEY,
   PROVIDER,
   URL_PROVIDER,
-} = require(process.cwd() + '/config.js')
+} = require(process.cwd() + '/config.js') || {};
+
+console.log(process.cwd())
 
 const S3config = {
   Bucket: BUCKET,
@@ -85,6 +87,8 @@ function getRequestAct(actionName, request) {
     debug:    request.debug && request.debug || debug,
     ...(request)
   }
+
+  console.log("req", req)
 
   switch(actionName){
     case 'GQL':
@@ -303,3 +307,6 @@ function svg(body){
     body
   }
 }
+
+service-portalhasura
+service-portalhasura
