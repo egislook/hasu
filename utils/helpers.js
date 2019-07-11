@@ -307,6 +307,3 @@ function svg(body){
     body
   }
 }
-
-service-portalhasura
-service-portalhasura
