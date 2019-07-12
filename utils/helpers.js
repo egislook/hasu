@@ -27,8 +27,6 @@ const {
   URL_PROVIDER,
 } = require(process.cwd() + '/config.js') || {};
 
-console.log(process.cwd())
-
 const S3config = {
   Bucket: BUCKET,
   region: REGION,
@@ -87,8 +85,6 @@ function getRequestAct(actionName, request) {
     debug:    request.debug && request.debug || debug,
     ...(request)
   }
-
-  console.log("req", req)
 
   switch(actionName){
     case 'GQL':
