@@ -51,6 +51,7 @@ module.exports.uploadImgToS3            = uploadImgToS3;
 module.exports.submit                   = submit;
 module.exports.getRequestAct            = getRequestAct;
 module.exports.destructionResult        = destructionResult;
+module.exports.clik_verify_token        = CLIK_VERIFY_TOKEN;
 
 // module.exports.resultJson       = resultJson;
 

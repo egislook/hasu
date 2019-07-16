@@ -1,6 +1,6 @@
 const uuidv1  = require('uuid/v1');
 const bcrypt  = require('bcrypt');
-const { fail, loginResult, config, destructionResult, getRequestAct } = require('../../utils/helpers');
+const { fail, loginResult, config, destructionResult, getRequestAct, clik_verify_token } = require('../../utils/helpers');
 const { authQuery } = require('../../utils/qrQueries');
 
 module.exports = async ({body = {}, configs = {}, query = ''}) => {
@@ -11,15 +11,16 @@ module.exports = async ({body = {}, configs = {}, query = ''}) => {
   authorization = authorization || Authorization;
 
   if ( provider === "clik-mobile" && !!authorization ){
-    if(!CLIK_VERIFY_TOKEN)
+    if(!clik_verify_token)
       return fail("CLIK_VERIFY_TOKEN is missing.")
     token         = authorization.replace(/bearer(\s{1,})?/i, '')
+
     const headers = {
                       'Content-Type': 'application/json',
                       'EkycSyncToken': 'UUhCOXV5RklGbkZxZVFJYmRlWlBXeWdPclU4UkFJaTB4aFJsaU5CYUM0OD0='
                     }
 
-    const verifyResult = await getRequestAct('POST', { url: CLIK_VERIFY_TOKEN, Token, headers })
+    const verifyResult = await getRequestAct('POST', { url: clik_verify_token, body: {token}, headers })
 
     if (verifyResult.code === 200 && verifyResult.data.isTokenValid)
       return loginResult(200, {
