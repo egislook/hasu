@@ -43,8 +43,11 @@ async function authorized(token, query){
   const uuid = uuidv1();
 
   try {
-    const { Session } = await getRequestAct('GQL', { query: query || authQuery(token) })
-    let {createdAt, credential: { user: { role, id }}} = Session.shift()
+    const Session = await getRequestAct('GQL', { query: query || authQuery(token) })
+      .then(res => res && res[Object.keys(res).shift()].shift() || {})
+
+    let {createdAt, credential: { user, account }} = Session
+    let { role, id } = (user || account) || {}
 
     const expireDate = 30
     createdAt   = new Date(createdAt).getTime()
@@ -91,9 +94,4 @@ function deleteExpiredToken(token){
     }
   `
   getRequestAct('GQL', { query })
-  // fetch(HASURA_ENDPOINT, {
-  //   method: 'POST',
-  //   body: JSON.stringify({ query }),
-  //   headers: headers
-  // });
 }
