@@ -46,8 +46,7 @@ async function authorized(token, query){
     const Session = await getRequestAct('GQL', { query: query || authQuery(token) })
       .then(res => res && res[Object.keys(res).shift()].shift() || {})
 
-    let {createdAt, credential: { user, account }} = Session
-    let { role, id } = (user || account) || {}
+    let {createdAt, id, role} = destructionResult(Session, ['createdAt', 'role', 'id'])
 
     const expireDate = 30
     createdAt   = new Date(createdAt).getTime()
@@ -69,21 +68,6 @@ async function authorized(token, query){
     return loginResult(401, { 'x-hasura-role': 'undefined Token' })
   }
 }
-
-// async function checkToken(token, query){
-//   query = query || authQuery(token)
-
-//   const { errors, data } = await fetch(HASURA_ENDPOINT, {
-//     method: 'POST',
-//     body: JSON.stringify({ query }),
-//     headers: headers
-//   }).then(res => res.json());
-
-//   if(!data)
-//     throw 'The Token provided is invalided.'
-
-//   return destructionResult(data, ['createdAt', 'role', 'id'])
-// }
 
 function deleteExpiredToken(token){
   const query = `
