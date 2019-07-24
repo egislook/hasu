@@ -8,7 +8,7 @@
     "aws-sdk": "^2.486.0",
     "bcrypt": "^3.0.6",
     "busboy": "^0.3.0",
-    "fetchier": "0.0.13",
+    "fetchier": "0.0.21",
     "fluent-ffmpeg": "^2.1.2",
     "form-data": "^2.3.3",
     "qr-image": "^3.2.0",
