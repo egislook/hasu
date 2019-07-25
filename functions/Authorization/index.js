@@ -46,7 +46,10 @@ async function authorized(token, query){
     const Session = await getRequestAct('GQL', { query: query || authQuery(token) })
       .then(res => res && res[Object.keys(res).shift()].shift() || {})
 
-    let {createdAt, id, role} = destructionResult(Session, ['createdAt', 'role', 'id'])
+    let {createdAt, id, role} = Session && destructionResult(Session, ['createdAt', 'role', 'id']) || {}
+
+    if(!role)
+      return loginResult(401, { 'x-hasura-role': 'undefined Token' })
 
     const expireDate = 30
     createdAt   = new Date(createdAt).getTime()
