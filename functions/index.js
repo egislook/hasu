@@ -36,4 +36,5 @@ module.exports.download           = download
 module.exports.imgsFromVid        = imgsFromVid
 module.exports.submit             = submit
 module.exports.getRequestAct      = getRequestAct
+module.exports.fetch              = require('fetchier').fetch
 
