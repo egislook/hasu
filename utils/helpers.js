@@ -136,7 +136,7 @@ function result(code, body, error){
     body: JSON.stringify({
       statusCode: code,
       version: 'v' + process.env && process.env.npm_package_version,
-      message: typeof error === 'object' ? error.message : error,
+      message: typeof error === 'object' ? (error.message || error) : error,
       data: body
     })
   }
