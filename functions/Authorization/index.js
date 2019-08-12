@@ -6,7 +6,7 @@ const { authQuery } = require('../../utils/qrQueries');
 module.exports = async ({body = {}, configs = {}, query = ''}) => {
 
 
-  let { token, authorization, Authorization, provider } = body
+  let { token, authorization, Authorization, provider, rules } = body
 
   authorization = authorization || Authorization;
 
@@ -33,20 +33,22 @@ module.exports = async ({body = {}, configs = {}, query = ''}) => {
 
   if (!!authorization || !!token){
     token = token || authorization.replace(/bearer(\s{1,})?/i, '');
-    return authorized(token, query);
+    return authorized(token, query, rules);
   }
 
   return loginResult(422, { 'Message': 'Miss matched parameters' })
 };
 
-async function authorized(token, query){
+async function authorized(token, query, rules){
   const uuid = uuidv1();
 
   try {
     const Session = await getRequestAct('GQL', { query: query || authQuery(token) })
       .then(res => res && res[Object.keys(res).shift()].shift() || {})
 
-    let {createdAt, id, role} = Session && destructionResult(Session, ['createdAt', 'role', 'id']) || {}
+    const destructRules = rules || ['createdAt', 'role', 'id']
+
+    let {createdAt, id, role, phone} = Session && destructionResult(Session, destructRules) || {}
 
     if(!role)
       return loginResult(401, { 'x-hasura-role': 'undefined Token' })
@@ -64,7 +66,8 @@ async function authorized(token, query){
       'x-hasura-role': role,
       'x-hasura-credential': uuid,
       'X-HASURA-USER-TOKEN': token,
-      'X-HASURA-USER-ID': id
+      'X-HASURA-USER-ID': id,
+      'X-HASURA-CONSUMER-PHONE': phone,
     })
   } catch(errors) {
     console.log("errors", errors)
