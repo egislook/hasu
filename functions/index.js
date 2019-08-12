@@ -9,10 +9,10 @@ const {
   download,
   imgsFromVid,
   submit,
-  getRequestAct
+  getRequestAct,
 }                                 = require('../utils/helpers');
 
-
+module.exports.status             = require('./Status');
 
 module.exports.GenerateQR         = require('./QR');
 
@@ -39,4 +39,3 @@ module.exports.submit             = submit
 module.exports.getRequestAct      = getRequestAct
 module.exports.act                = getRequestAct
 module.exports.fetch              = require('fetchier').fetch
-
