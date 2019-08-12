@@ -40,7 +40,7 @@ async function login(phone, loginPin, tables = {}, condition = '', fields = `id 
       }
       return loginResult(401, {Message:  `${needField} incorrect`})
     }
-    return loginResult(401, {Message: "Account does not exist."})
+    return loginResult(404, {Message: "Account does not exist."})
   }catch(err){
     return loginResult(401, {Message: "Unauthorized"})
   }
