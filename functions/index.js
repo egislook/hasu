@@ -24,6 +24,7 @@ module.exports.postUpload         = require('./Upload/post');
 
 module.exports.login              = require('./Login');
 module.exports.auth               = require('./Authorization');
+module.exports.getPresignURL      = require('./Upload/get')
 
 module.exports.success            = success
 module.exports.fail               = fail
@@ -36,5 +37,6 @@ module.exports.download           = download
 module.exports.imgsFromVid        = imgsFromVid
 module.exports.submit             = submit
 module.exports.getRequestAct      = getRequestAct
+module.exports.act                = getRequestAct
 module.exports.fetch              = require('fetchier').fetch
 

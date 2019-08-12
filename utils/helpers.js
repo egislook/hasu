@@ -102,27 +102,6 @@ function getRequestAct(actionName, request) {
 function generateQR({ url, session, provider, hook}) {
   return functions.GenerateQR({ url: url || URL_PROVIDER, session: session || id, provider: provider || PROVIDER, hook: hook || QR_HOOK_ENDPOINT });
 }
-// function checkConfigFile(){
-//   try{
-//     return require(process.cwd() + '/config.js');
-//   } catch(err) {
-//     throw err
-//   }
-// }
-
-// function config(requiredKeys, configFile, configs){
-//   try {
-//     configs             = configFile ? checkConfigFile() : configs
-//     let missingKeys     = requiredKeys.filter( key => configs[key] === undefined)
-//     const errMessage    = missingKeys.join(' ,') + ' are missing.'
-
-//     if (missingKeys.length === 0)
-//       return configs
-//     return { errMessage }
-//   } catch(err){
-//     return { errMessage: "Config file is missing in root path."}
-//   }
-// }
 
 function result(code, body, error){
 
