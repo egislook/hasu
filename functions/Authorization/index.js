@@ -48,7 +48,7 @@ async function authorized(token, query, rules){
 
     const destructRules = rules || ['createdAt', 'role', 'id']
 
-    let {createdAt, id, role, phone} = Session && destructionResult(Session, destructRules) || {}
+    let {createdAt, id, role, phoneNumber} = Session && destructionResult(Session, destructRules) || {}
 
     if(!role)
       return loginResult(401, { 'x-hasura-role': 'undefined Token' })
@@ -67,7 +67,7 @@ async function authorized(token, query, rules){
       'x-hasura-credential': uuid,
       'X-HASURA-USER-TOKEN': token,
       'X-HASURA-USER-ID': id,
-      'X-HASURA-CONSUMER-PHONE': phone,
+      'X-HASURA-CONSUMER-PHONE': phoneNumber,
     })
   } catch(errors) {
     console.log("errors", errors)
