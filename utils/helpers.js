@@ -51,6 +51,7 @@ module.exports.uploadImgToS3            = uploadImgToS3;
 module.exports.submit                   = submit;
 module.exports.getRequestAct            = getRequestAct;
 module.exports.destructionResult        = destructionResult;
+module.exports.compareObjects           = compareObjects;
 module.exports.clik_verify_token        = CLIK_VERIFY_TOKEN;
 
 // module.exports.resultJson       = resultJson;
@@ -283,3 +284,23 @@ function svg(body){
     body
   }
 }
+
+function compareObjects(newValues, oldValues, tableName = []){
+  let changeObj = {}
+
+  Object.keys(oldValues).map( key => {
+    if( typeof newValues[key] === 'object' &&  newValues[key] !== null && !Array.isArray(newValues[key]) && ~tableName.indexOf(key) !== -1){
+      const res = compareObjects(newValues[key], oldValues[key], tableName)
+      if(Object.keys(res).length )
+        changeObj[key] = res
+    }else if( key === 'id' ){
+      changeObj[key] = newValues[key] === undefined ? oldValues[key] : newValues[key]
+    }
+    else if (newValues[key] !== oldValues[key] && newValues[key] !== undefined) {
+      changeObj[key] = newValues[key]
+    }
+  })
+
+  return changeObj
+}
+
