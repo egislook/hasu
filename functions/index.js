@@ -10,6 +10,7 @@ const {
   imgsFromVid,
   submit,
   getRequestAct,
+  compareObjects,
 }                                 = require('../utils/helpers');
 
 module.exports.status             = require('./Status');
@@ -38,4 +39,6 @@ module.exports.imgsFromVid        = imgsFromVid
 module.exports.submit             = submit
 module.exports.getRequestAct      = getRequestAct
 module.exports.act                = getRequestAct
+module.exports.compareObjects     = compareObjects
+module.exports.hasuHelpers        = require('../utils/helpers');
 module.exports.fetch              = require('fetchier').fetch

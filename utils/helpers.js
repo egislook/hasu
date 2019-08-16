@@ -25,7 +25,7 @@ const {
   MAP_KEY,
   PROVIDER,
   URL_PROVIDER,
-} = require(process.cwd() + '/config.js') || {};
+} = {};
 
 const S3config = {
   Bucket: BUCKET,
@@ -52,6 +52,9 @@ module.exports.submit                   = submit;
 module.exports.getRequestAct            = getRequestAct;
 module.exports.destructionResult        = destructionResult;
 module.exports.compareObjects           = compareObjects;
+module.exports.parseValuesUpsert        = parseValuesUpsert
+module.exports.getUpdateColumns         = getUpdateColumns
+module.exports.isEmptyObject            = isEmptyObject
 module.exports.clik_verify_token        = CLIK_VERIFY_TOKEN;
 
 // module.exports.resultJson       = resultJson;
@@ -285,22 +288,64 @@ function svg(body){
   }
 }
 
-function compareObjects(newValues, oldValues, tableName = []){
+function compareObjects({newValues, oldValues, name = []}){
   let changeObj = {}
 
-  Object.keys(oldValues).map( key => {
-    if( typeof newValues[key] === 'object' &&  newValues[key] !== null && !Array.isArray(newValues[key]) && ~tableName.indexOf(key) !== -1){
-      const res = compareObjects(newValues[key], oldValues[key], tableName)
-      if(Object.keys(res).length )
+  const oldKeys = Object.keys(oldValues)
+  const newKeys = Object.keys(newValues)
+
+  oldKeys.map( key => {
+
+    if( typeof newValues[key] === 'object' && !isEmptyObject(newValues[key]) && !Array.isArray(newValues[key]) && ~name.indexOf(key) === 0 && !isEmptyObject(oldValues[key])){
+
+      const res = compareObjects({newValues: newValues[key], oldValues: oldValues[key], name})
+
+      if(Object.keys(res).length)
         changeObj[key] = res
-    }else if( key === 'id' ){
+    }else if( key === 'id' )
       changeObj[key] = newValues[key] === undefined ? oldValues[key] : newValues[key]
-    }
-    else if (newValues[key] !== oldValues[key] && newValues[key] !== undefined) {
+    else if(~name.indexOf(key) !== 0)
       changeObj[key] = newValues[key]
-    }
+    else if (newValues[key] !== oldValues[key] && newValues[key] !== undefined && !isEmptyObject(newValues[key]))
+      changeObj[key] = newValues[key]
+  })
+
+  newKeys.map( key => {
+    if (~oldKeys.indexOf(key) === 0 && newValues[key] !== null)
+      changeObj[key] = newValues[key]
   })
 
   return changeObj
 }
 
+function parseValuesUpsert({data, notTable = []}) {
+  const keys = Object.keys(data)
+
+  keys.filter(key => {
+    if (typeof data[key] === 'object' && data[key] !== null && ~notTable.indexOf(key) === 0 ) {
+      data[key] = {
+        data: data[key],
+        on_conflict: {
+          constraint: `${keysToUpperCase(key.replace(/s?$/gi, ''))}_pkey`,
+          update_columns: getUpdateColumns(data[key])
+        }
+      }
+    } else {
+      data[key] = typeof data[key] === 'number' ? data[key].toString() : data[key]
+    }
+  })
+
+  return data
+}
+
+function getUpdateColumns(data) {
+  data = (data[0] && data[0]) || data
+  const keys = Object.keys(data)
+  return keys.filter(key => typeof data[key] !== 'object')
+}
+
+function isEmptyObject(obj) {
+  if ( obj === null ) return true
+  if ( Object.keys(obj).length === 0 ) return true
+  return false
+}
