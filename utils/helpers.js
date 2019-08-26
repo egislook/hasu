@@ -25,7 +25,7 @@ const {
   MAP_KEY,
   PROVIDER,
   URL_PROVIDER,
-} = {};
+} = require(process.cwd() + '/config.js') || {};
 
 const S3config = {
   Bucket: BUCKET,
