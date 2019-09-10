@@ -4,7 +4,7 @@ const FormData    = require('form-data');
 const ffmpeg      = require('fluent-ffmpeg')
 const uuidv4      = require('uuid/v4');
 const { fetch, GQL, GET, POST }   = require('fetchier');
-// const { createWriteStream, createReadStream, existsSync, mkdirSync, unlinkSync, rmdirSync } = require('fs');
+const { createWriteStream, createReadStream, existsSync, mkdirSync, unlinkSync, rmdirSync } = require('fs');
 
 const functions      = require('../functions');
 const {
@@ -59,7 +59,7 @@ module.exports.clik_verify_token        = CLIK_VERIFY_TOKEN;
 
 // module.exports.resultJson       = resultJson;
 
-// const dir = process.cwd() + '/temp/';
+const dir = process.cwd() + '/temp/';
 
 // const config = (conf) => conf || require(process.cwd() + '/config.js');
 
