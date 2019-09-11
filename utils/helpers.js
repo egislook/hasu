@@ -338,10 +338,10 @@ function parseValuesUpsert({data, notTable = []}) {
   return data
 }
 
-function getUpdateColumns(data) {
+function getUpdateColumns(data, notTable = []) {
   data = (data[0] && data[0]) || data
   const keys = Object.keys(data)
-  return keys.filter(key => typeof data[key] !== 'object')
+  return keys.filter(key => (typeof data[key] !== 'object' ||  ~notTable.indexOf(key) !== 0 ))
 }
 
 function isEmptyObject(obj) {
