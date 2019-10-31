@@ -143,6 +143,13 @@ function success(body, message){
 }
 
 function fail(error, body, code = 500){
+
+  if(typeof error !== 'string'){
+    code  = error.statusCode && error.statusCode || error.code
+    body  = error.data
+    error = error.message && error.message || error.status
+  }
+
   return result(code, body, error);
 }
 
