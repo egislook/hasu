@@ -145,7 +145,7 @@ function success(body, message){
 function fail(error, body, code = 500){
 
   if(typeof error !== 'string'){
-    code  = error.statusCode && error.statusCode || error.code
+    code  = error.statusCode && error.statusCode || code
     body  = error.data
     error = error.message && error.message || error.status
   }
