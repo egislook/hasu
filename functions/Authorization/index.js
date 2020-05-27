@@ -75,10 +75,10 @@ async function authorized(token, query, rules){
   }
 }
 
-function deleteExpiredToken(token){
+function deleteExpiredToken(token, table='Sessions'){
   const query = `
     mutation{
-      delete_Session(where: {token: {_eq: "${token}"}}){
+      delete_${table}(where: {token: {_eq: "${token}"}}){
         affected_rows
       }
     }
