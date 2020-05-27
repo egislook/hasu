@@ -1,15 +1,16 @@
 const { create, getSessionToken } = require('../../utils/qrQueries');
 const { fail, success, generateQR, getRequestAct } = require('../../utils/helpers');
 
-module.exports = async ({ session }) => {
+module.exports = async ({ session, table }) => {
+
   if(session){
-    const { token } = await getSession(session);
+    const { token } = await getSession(session, table);
 
     return success({ token });
   }
 
   try{
-    const { id } = await setSession();
+    const { id } = await setSession(table);
 
     const qr = await generateQR({ session: id }).then( res => res.body)
 
@@ -18,18 +19,19 @@ module.exports = async ({ session }) => {
   } catch(error){ return fail(error) }
 }
 
-function setSession() {
-  const query = create('Session');
+function setSession(table = 'Sessions') {
+  const query = create(table);
+  const insert_table = `insert_${table}`
 
   return getRequestAct('GQL', { query, variables: { values: {} } })
-    .then(({ insert_Session: { returning: [ session ]}}) => session);
+    .then(({ [insert_table]: { returning: [ session ]}}) => session);
 }
 
-function getSession(session) {
+function getSession(session, table = 'Sessions') {
   const query = getSessionToken(session);
 
   return getRequestAct('GQL', { query })
-    .then(({ Session: [ session ]}) => {
+    .then(({ [table]: [ session ]}) => {
       return session;
     });
 }

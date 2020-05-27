@@ -1,8 +1,8 @@
 module.exports = {
 
-  authQuery: (token) => `
+  authQuery: (token, table = 'Sessions') => `
     query{
-      Session(where: { token: { _eq: "${token}"} }){
+      ${table}(where: { token: { _eq: "${token}"} }){
         createdAt
         credential{
           user{
@@ -14,7 +14,7 @@ module.exports = {
     }
   `,
 
-  create: (table) => `
+  create: (table = 'Sessions') => `
     mutation($values: ${table}_insert_input!) {
       insert_${table}(objects: [$values]){
         returning{ id }
@@ -54,26 +54,26 @@ module.exports = {
     }
   `,
 
-  getSessionToken: id => `
+  getSessionToken: (id, table = 'Sessions') => `
     query{
-      Session(where: { id: {_eq: "${id}"} }){
+      ${table}(where: { id: {_eq: "${id}"} }){
         id
         token
       }
     }
   `,
 
-  setSessionToken: `
+  setSessionToken: (table = 'Sessions') => `
   mutation($id: uuid, $token: uuid, $credentialId: uuid){
-    update_Session(_set: { token: $token, credentialId: $credentialId }, where: { id: {_eq: $id} } ){
+    update_${table}(_set: { token: $token, credentialId: $credentialId }, where: { id: {_eq: $id} } ){
       returning{ id token createdAt }
     }
   }
   `,
 
-  deleteSession: id => `
+  deleteSession: (id, table = 'Sessions') => `
     mutation {
-      delete_Session(where: {id: {_eq: "${id}"}}) {
+      delete_${table}(where: {id: {_eq: "${id}"}}) {
         affected_rows
       }
     }
