@@ -120,7 +120,7 @@ function result(code, body, error){
       statusCode: code,
       version: 'v' + process.env && process.env.npm_package_version,
       message: typeof error === 'object' ? (error.message || error) : error,
-      title: typeof error === 'object' ? (error.title || error) : null,
+      title: typeof error === 'object' ? (error.title || null) : null,
       data: body
     })
   }
