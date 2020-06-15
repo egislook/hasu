@@ -120,6 +120,7 @@ function result(code, body, error){
       statusCode: code,
       version: 'v' + process.env && process.env.npm_package_version,
       message: typeof error === 'object' ? (error.message || error) : error,
+      title: typeof error === 'object' ? (error.title || error) : null,
       data: body
     })
   }
@@ -147,7 +148,7 @@ function fail(error, body, code = 500){
   if(typeof error !== 'string'){
     code  = error.statusCode && error.statusCode || code
     body  = error.data
-    error = error.message && error.message || error.status
+    error = error
   }
 
   return result(code, body, error);
