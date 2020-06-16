@@ -16,11 +16,6 @@ const {
   HASURA_ENDPOINT,
   HASURA_ACCESSKEY,
   CLIK_VERIFY_TOKEN,
-  CLIK_UPDATE_ENDPOINT_EKYC,
-  CLIK_UPDATE_ENDPOINT_EKYM,
-  SLASH_DOCUMENT_ENDPOINT,
-  EVERAI_LIVENESS_ENDPOINT,
-  EVERAI_MATCH_ENDPOINT,
   QR_HOOK_ENDPOINT,
   MAP_KEY,
   PROVIDER,
@@ -120,7 +115,7 @@ function result(code, body, error){
       statusCode: code,
       version: 'v' + process.env && process.env.npm_package_version,
       message: typeof error === 'object' ? (error.message || error) : error,
-      title: typeof error === 'object' ? (error.title || null) : null,
+      status: typeof error === 'object' ? (error.status || null) : null,
       data: body
     })
   }
