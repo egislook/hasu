@@ -321,7 +321,7 @@ function compareObjects({newValues, oldValues, name = []}){
   return changeObj
 }
 
-function parseValuesUpsert({data, notTable = []}) {
+function parseValuesUpsert({data, notTable = [], removePlural = false}) {
   const keys = Object.keys(data)
 
   keys.filter(key => {
@@ -329,7 +329,7 @@ function parseValuesUpsert({data, notTable = []}) {
       data[key] = {
         data: data[key],
         on_conflict: {
-          constraint: `${keysToUpperCase(key.replace(/s?$/gi, ''))}_pkey`,
+          constraint: `${keysToUpperCase( removePlural ? key.replace(/s?$/gi, '') : key)}_pkey`,
           update_columns: getUpdateColumns(data[key])
         }
       }
