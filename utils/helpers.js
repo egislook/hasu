@@ -321,7 +321,7 @@ function compareObjects({newValues, oldValues, name = []}){
   return changeObj
 }
 
-function parseValuesUpsert({data, notTable = [], removePlural = false}) {
+function parseValuesUpsert({data, notTable = [], removePlural = false, addPlural = false}) {
   const keys = Object.keys(data)
 
   keys.filter(key => {
