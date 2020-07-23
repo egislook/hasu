@@ -326,19 +326,34 @@ function parseValuesUpsert({data, notTable = [], removePlural = false}) {
 
   keys.filter(key => {
     if (typeof data[key] === 'object' && data[key] !== null && ~notTable.indexOf(key) === 0 ) {
-      data[key] = {
+      const tableName = addPlural ? pluralize(key)  : key
+
+      data[tableName] = {
         data: data[key],
         on_conflict: {
-          constraint: `${keysToUpperCase( removePlural ? key.replace(/s?$/gi, '') : key)}_pkey`,
+          constraint: `${keysToUpperCase( removePlural ? tableName.replace(/s?$/gi, '') : tableName)}_pkey`,
           update_columns: getUpdateColumns(data[key])
         }
       }
+      addPlural && delete data[key]
     } else {
       data[key] = typeof data[key] === 'number' ? data[key].toString() : data[key]
     }
   })
 
   return data
+}
+
+function pluralize(text){
+  
+  switch (text.slice(-1)) {
+    case "s":
+      return text + "es"
+    case "y":
+      return text.replace(/y$/i, "ies")
+    default:
+      return text + "s"
+  }
 }
 
 function getUpdateColumns(data, notTable = []) {
