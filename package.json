@@ -1,6 +1,6 @@
 {
   "name": "hasu",
-  "version": "0.0.37",
+  "version": "0.0.38",
   "description": "Hasura serverless utils",
   "main": "./functions",
   "dependencies": {
