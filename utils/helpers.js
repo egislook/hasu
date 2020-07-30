@@ -359,7 +359,7 @@ function pluralize(text){
 function getUpdateColumns(data, notTable = []) {
   data = (data[0] && data[0]) || data
   const keys = Object.keys(data)
-  return keys.filter(key => (typeof data[key] !== 'object' ||  ~notTable.indexOf(key) !== 0 ))
+  return keys.filter(key => (data[key] === null || typeof data[key] !== 'object' ||  ~notTable.indexOf(key) !== 0 ))
 }
 
 function isEmptyObject(obj) {
