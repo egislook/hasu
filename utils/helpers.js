@@ -103,7 +103,7 @@ function generateQR({ url, session, provider, hook}) {
 }
 
 function result(code, body, error, extra = {}){
-
+  error = error || {}
   return {
     statusCode: code,
     headers: {
