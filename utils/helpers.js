@@ -102,7 +102,7 @@ function generateQR({ url, session, provider, hook}) {
   return functions.GenerateQR({ url: url || URL_PROVIDER, session: session || id, provider: provider || PROVIDER, hook: hook || QR_HOOK_ENDPOINT });
 }
 
-function result(code, body, error){
+function result(code, body, error, extra = {}){
 
   return {
     statusCode: code,
@@ -116,7 +116,8 @@ function result(code, body, error){
       version: 'v' + process.env && process.env.npm_package_version,
       message: typeof error === 'object' ? (error.message || error) : error,
       status: typeof error === 'object' ? (error.status || null) : null,
-      data: body
+      data: body,
+      ...extra
     })
   }
 }
@@ -134,8 +135,8 @@ function loginResult(code, body){
 }
 
 
-function success(body, message){
-  return result(200, body, message);
+function success(body, message, extra){
+  return result(200, body, message, extra);
 }
 
 function fail(error, body, code = 500){
