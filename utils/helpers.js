@@ -330,7 +330,7 @@ function parseValuesUpsert({data, notTable = [], removePlural = false, addPlural
       const tableName = addPlural ? pluralize(key)  : key
 
       data[tableName] = {
-        data: data[key],
+        data: parseValuesUpsert({data: data[key], notTable, removePlural, addPlural}),
         on_conflict: {
           constraint: `${keysToUpperCase( removePlural ? tableName.replace(/s?$/gi, '') : tableName)}_pkey`,
           update_columns: getUpdateColumns(data[key])
