@@ -327,10 +327,13 @@ function parseValuesUpsert({data, notTable = [], removePlural = false, addPlural
 
   keys.filter(key => {
     if (typeof data[key] === 'object' && data[key] !== null && ~notTable.indexOf(key) === 0 ) {
+
       const tableName = addPlural ? pluralize(key)  : key
 
       data[tableName] = {
-        data: parseValuesUpsert({data: data[key], notTable, removePlural, addPlural}),
+        data: Array.isArray(data[key]) ? 
+          data[key].map(eachKey => parseValuesUpsert({data: eachKey, notTable, removePlural, addPlural})) : 
+          parseValuesUpsert({data: data[key], notTable, removePlural, addPlural}),
         on_conflict: {
           constraint: `${keysToUpperCase( removePlural ? tableName.replace(/s?$/gi, '') : tableName)}_pkey`,
           update_columns: getUpdateColumns(data[key])
