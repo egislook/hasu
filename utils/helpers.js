@@ -103,23 +103,24 @@ function generateQR({ url, session, provider, hook}) {
   return functions.GenerateQR({ url: url || URL_PROVIDER, session: session || id, provider: provider || PROVIDER, hook: hook || QR_HOOK_ENDPOINT });
 }
 
-function result(code, body, error, extra = {}){
-  error = error || {}
+function result(statusCode, data, error, extra = {}){
+
+  const details = {
+    statusCode,
+    version: 'v' + process.env && process.env.npm_package_version,
+  }
+
+  if(!!error) details.message = typeof error === 'object' ? (error.message || error) : error
+  if(!!error && !!error.status) details.status = typeof error === 'object' ? (error.status || null) : null,
+
   return {
-    statusCode: code,
+    statusCode,
     headers: {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Credentials' : true,
       'Access-Control-Allow-Origin': '*'
     },
-    body: JSON.stringify({
-      statusCode: code,
-      version: 'v' + process.env && process.env.npm_package_version,
-      message: typeof error === 'object' ? (error.message || error) : error,
-      status: typeof error === 'object' ? (error.status || null) : null,
-      data: body,
-      ...extra
-    })
+    body: JSON.stringify({ ...details, data, ...extra })
   }
 }
 
