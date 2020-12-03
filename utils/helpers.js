@@ -49,8 +49,9 @@ module.exports.destructionResult        = destructionResult;
 module.exports.compareObjects           = compareObjects;
 module.exports.parseValuesUpsert        = parseValuesUpsert
 module.exports.getUpdateColumns         = getUpdateColumns
-module.exports.isEmptyObject            = isEmptyObject
+module.exports.isEmptyObject            = isEmptyObject;
 module.exports.clik_verify_token        = CLIK_VERIFY_TOKEN;
+module.exports.parseEvent               = parseEvent;
 
 // module.exports.resultJson       = resultJson;
 
@@ -331,8 +332,8 @@ function parseValuesUpsert({data, notTable = [], removePlural = false, addPlural
       const tableName = addPlural ? pluralize(key)  : key
 
       data[tableName] = {
-        data: Array.isArray(data[key]) ? 
-          data[key].map(eachKey => parseValuesUpsert({data: eachKey, notTable, removePlural, addPlural})) : 
+        data: Array.isArray(data[key]) ?
+          data[key].map(eachKey => parseValuesUpsert({data: eachKey, notTable, removePlural, addPlural})) :
           parseValuesUpsert({data: data[key], notTable, removePlural, addPlural}),
         on_conflict: {
           constraint: `${keysToUpperCase( removePlural ? tableName.replace(/s?$/gi, '') : tableName)}_pkey`,
@@ -349,7 +350,7 @@ function parseValuesUpsert({data, notTable = [], removePlural = false, addPlural
 }
 
 function pluralize(text){
-  
+
   switch (text.slice(-1)) {
     case "s":
       return text + "es"
@@ -370,4 +371,36 @@ function isEmptyObject(obj) {
   if ( obj === null ) return true
   if ( Object.keys(obj).length === 0 ) return true
   return false
+}
+
+function parseEvent(event) {
+
+  let body
+  let token
+
+  try {
+    body = JSON.parse(event.body) || {}
+    token = body && body.token
+  } catch (error) {
+    body = event.body
+  }
+  const bodyHeaders = (body && body.headers) || ''
+  const { headers } = event
+
+  let { authorization, Authorization } = ((headers.authorization || headers.Authorization) && headers) || bodyHeaders || {}
+
+  let { queryStringParameters } = {}
+  let { id } = {}
+
+  if(event && event.queryStringParameters)
+    queryStringParameters = event.queryStringParameters
+
+  if(event && event.pathParameters && event.pathParameters.id)
+    id = event.pathParameters.id
+
+  authorization = authorization || Authorization
+
+  token = ((authorization && authorization.replace(/bearer(\s{1,})?/i, '')) || token || '')
+
+  return { authorization, token, body, headers, queryStringParameters, id, params: event.pathParameters, query: queryStringParameters }
 }

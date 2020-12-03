@@ -11,6 +11,7 @@ const {
   submit,
   getRequestAct,
   compareObjects,
+  parseEvent
 }                                 = require('../utils/helpers');
 
 module.exports.status             = require('./Status');
@@ -30,6 +31,7 @@ module.exports.getPresignURL      = require('./Upload/get')
 module.exports.success            = success
 module.exports.fail               = fail
 module.exports.result             = result
+module.exports.parseEvent         = parseEvent
 module.exports.loginResult        = loginResult
 module.exports.keysToLowerCase    = keysToLowerCase
 module.exports.keysToUpperCase    = keysToUpperCase
