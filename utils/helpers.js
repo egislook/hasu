@@ -111,7 +111,7 @@ function result(statusCode, data, error, extra = {}){
   }
 
   if(!!error) details.message = typeof error === 'object' ? (error.message || error) : error
-  if(!!error && !!error.status) details.status = typeof error === 'object' ? (error.status || null) : null,
+  if(!!error && !!error.status) details.status = typeof error === 'object' ? (error.status || null) : null
 
   return {
     statusCode,
